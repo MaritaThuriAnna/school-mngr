@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { User } from '../models/user.model';
+import { doc, Firestore, getDoc, setDoc } from '@angular/fire/firestore';
 
 
 interface AuthResponseData {
@@ -21,7 +22,11 @@ export class AuthService {
   private apiKey = 'AIzaSyDfv-YCtjXt68XnGul0LcK06eiSyMW6394';
   user = new BehaviorSubject<User | null>(null);
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(
+    private http: HttpClient, 
+    private router: Router,
+    private firestore: Firestore
+  ) {
     this.autoLogin();
   }
 
@@ -34,16 +39,27 @@ export class AuthService {
       .post<AuthResponseData>(
         `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${this.apiKey}`,
         {
-          email: email,
-          password: password,
+          email,
+          password,
           returnSecureToken: true,
         }
       )
       .pipe(
-        tap((response) => {
+        tap(async (response) => {
           this.sendVerificationEmail(response.idToken).subscribe(() =>
             console.log('Verification mail sent!')
           );
+  
+          const userProfile = {
+            id: response.localId,
+            email,
+            name: email.split('@')[0],
+            role: 'PROFESOR',
+            schoolId: 'schoolId1'
+          };
+  
+          const userDocRef = doc(this.firestore, 'User', response.localId);
+          await setDoc(userDocRef, userProfile);
         })
       );
   }
@@ -53,24 +69,61 @@ export class AuthService {
       .post<AuthResponseData>(
         `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${this.apiKey}`,
         {
-          email: email,
-          password: password,
+          email,
+          password,
           returnSecureToken: true,
         }
       )
       .pipe(
-        tap((response) => {
+        tap(async (response) => {
           this.handleAuthentication(
             response.email,
             response.localId,
             response.idToken,
             +response.expiresIn
           );
-          // this.user.next(response);
-          this.router.navigate(['track']);
+  
+          // 🔍 Fetch role from Firestore
+          const userDocRef = doc(this.firestore, 'User', response.localId);
+          const userSnap = await getDoc(userDocRef);
+          const userData = userSnap.data() as { role: string };
+  
+          if (userData?.role === 'ADMIN') {
+            this.router.navigate(['admin-dashboard']);
+          } else if (userData?.role === 'PROFESOR') {
+            this.router.navigate(['profesor-dashboard']);
+          } else if (userData?.role === 'STUDENT') {
+            this.router.navigate(['student-dashboard']);
+          } else {
+            this.router.navigate(['/']);
+          }
         })
       );
   }
+
+//   login(email: string, password: string) {
+//     return this.http
+//       .post<AuthResponseData>(
+//         `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${this.apiKey}`,
+//         {
+//           email: email,
+//           password: password,
+//           returnSecureToken: true,
+//         }
+//       )
+//       .pipe(
+//         tap((response) => {
+//           this.handleAuthentication(
+//             response.email,
+//             response.localId,
+//             response.idToken,
+//             +response.expiresIn
+//           );
+//           // this.user.next(response);
+//           this.router.navigate(['track']);
+//         })
+//       );
+//   }
 
   resetPassword(email: string) {
     return this.http.post(
