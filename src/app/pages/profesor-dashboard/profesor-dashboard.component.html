@@ -29,7 +29,7 @@
     </thead>
     <tbody>
       <tr *ngFor="let student of enrolledStudents">
-        <td>{{ student.StudentId }}</td>
+        <td>{{ student.name }}</td>
         <td>{{ student.grades?.join(', ') || '—' }}</td>
         <td>{{ student.average || '-' }}</td>
         <td>
