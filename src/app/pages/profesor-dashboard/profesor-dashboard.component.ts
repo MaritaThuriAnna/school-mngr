@@ -24,6 +24,7 @@ export class ProfesorDashboardComponent {
   selectedCourse: any = null;
   enrolledStudents: any[] = [];
   today = new Date().toISOString().split('T')[0];
+  newCourseName: string = '';
 
   async ngOnInit() {
     const id = this.auth.getId();
@@ -56,6 +57,23 @@ export class ProfesorDashboardComponent {
     const target = event.target as HTMLSelectElement;
     const selectedCourseId = target.value;
     this.selectCourse(selectedCourseId);
+  }
+  
+  async addNewCourse() {
+    if (!this.newCourseName) return;
+    await this.db.addCourse({
+      Name: this.newCourseName,
+      ProfessorId: this.professorId,
+      SchoolId: 'HwIxpCjEXq9s6DlX2nJm', 
+    });
+    this.newCourseName = '';
+    this.courses = await this.db.getCoursesByProfessor(this.professorId);
+  }
+
+  get classAverage(): number {
+    if (!this.enrolledStudents.length) return 0;
+    const sum = this.enrolledStudents.reduce((acc, s) => acc + (s.average || 0), 0);
+    return +(sum / this.enrolledStudents.length).toFixed(2);
   }
   
 }
