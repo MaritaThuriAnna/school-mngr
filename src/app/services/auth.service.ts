@@ -54,7 +54,7 @@ export class AuthService {
             id: response.localId,
             email,
             name: email.split('@')[0],
-            role: 'PROFESOR',
+            role: 'STUDENT',
             schoolId: 'schoolId1'
           };
   
