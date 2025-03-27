@@ -40,13 +40,13 @@
 
 <!-- Student List -->
 <div *ngIf="selectedCourse" class="student-section">
-  <h3>Students in {{ selectedCourse.Name || selectedCourse.name }}</h3>
-  <p> {{selectedCourse.Description}} </p>
+  <h3>Students in <strong>{{ selectedCourse.Name }}</strong></h3>
+  <p class="course-description">{{ selectedCourse.Description }}</p>
 
   <table class="student-table">
     <thead>
       <tr>
-        <th>Student ID</th>
+        <th>Full Name</th>
         <th>Grades</th>
         <th>Average</th>
         <th>New Grade</th>
