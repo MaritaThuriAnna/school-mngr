@@ -1,21 +1,47 @@
 <h2 class="title">Profesor Dashboard</h2>
-
-<!-- Course Selector -->
-<div *ngIf="courses.length > 0" class="form-group">
-  <label for="course-select">Select Course:</label>
-  <select id="course-select" (change)="onCourseChange($event)">
-    <option value="" disabled selected>Select a course</option>
-    <option *ngFor="let course of courses" [value]="course.id">
-      {{ course.Name || course.name }}
-    </option>
-  </select>
+<div class="course-form">
+  <input [(ngModel)]="newCourseName" placeholder="New course name" />
+  <button (click)="addNewCourse()">Create</button>
 </div>
+
+<div class="modal-backdrop" *ngIf="editingCourse">
+  <div class="modal">
+    <h3>Edit Course</h3>
+
+    <label>Name:
+      <input [(ngModel)]="editingCourse.Name" maxlength="50" required />
+    </label>
+
+    <label>School ID:
+      <input [(ngModel)]="editingCourse.SchoolId" maxlength="30" required />
+    </label>
+
+    <label>Description:
+      <textarea [(ngModel)]="editingCourse.Description" rows="3" maxlength="150"></textarea>
+    </label>
+
+    <div class="modal-buttons">
+      <button (click)="saveCourseChanges()"> Update</button>
+      <button class="danger" (click)="deleteCourse()"> Delete</button>
+      <button (click)="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<ul class="course-list">
+  <li *ngFor="let course of courses">
+    <button (click)="selectCourse(course.id)">{{ course.Name }}</button>
+    <button (click)="openEditor(course)"> Edit</button>
+  </li>
+</ul>
+
 
 <p *ngIf="courses.length === 0" class="no-courses">No courses found for this professor.</p>
 
 <!-- Student List -->
 <div *ngIf="selectedCourse" class="student-section">
   <h3>Students in {{ selectedCourse.Name || selectedCourse.name }}</h3>
+  <p> {{selectedCourse.Description}} </p>
 
   <table class="student-table">
     <thead>
@@ -37,8 +63,8 @@
           <button class="add-btn" (click)="addGrade(student)">Add</button>
         </td>
         <td>
-          <button class="attendance present" (click)="markAttendance(student.StudentId, 'present')">✔️</button>
-          <button class="attendance absent" (click)="markAttendance(student.StudentId, 'absent')">❌</button>
+          <button class="attendance present" (click)="markAttendance(student.StudentId, 'present')">Present</button>
+          <button class="attendance absent" (click)="markAttendance(student.StudentId, 'absent')">Absent</button>
         </td>
       </tr>
     </tbody>
