@@ -1,8 +1,8 @@
-.title {
-  font-size: 30px;
-  margin-bottom: 25px;
-  color: #2c3e50;
-  font-weight: 700;
+h2.title {
+  font-size: 32px;
+  margin-bottom: 20px;
+  color: #576086;
+  font-weight: bold;
 }
 
 .course-form {
@@ -15,14 +15,14 @@
   padding: 8px 12px;
   font-size: 15px;
   border-radius: 6px;
-  border: 1px solid #ccc;
+  border: 1px solid #9d9ea6;
   width: 250px;
 }
 
 .course-form button {
   padding: 8px 16px;
-  background-color: #2c3e50;
-  color: white;
+  background-color: #f1b294;
+  color: #f0f8fe;
   border: none;
   border-radius: 6px;
   font-size: 14px;
@@ -30,65 +30,59 @@
 }
 
 .course-form button:hover {
-  background-color: #4f759a;
+  background-color: #e6a684;
 }
 
 .course-list {
-  list-style: none;
-  padding: 0;
-  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 10px;
 }
 
 .course-list li {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #f4f6f8;
-  padding: 12px 20px;
-  margin-bottom: 10px;
+  background-color: #dde1e5;
+  padding: 8px 10px;
+  margin: 5px;
   border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
 }
 
-.course-list button {
+.course-list .courseBtn {
   padding: 6px 14px;
+  margin: 5px;
   border: none;
   border-radius: 6px;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
+  background-color: #576086;
+  color: #f0f8fe;
 }
 
-.course-list button:first-child {
-  background-color: #2c3e50;
-  color: white;
-  margin-right: 10px;
+.course-list .editBtn {
+  padding: 6px 14px;
+  border: none;
+  margin-left: 5px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: #e6a684;
 }
 
-.course-list button:first-child:hover {
-  background-color: #4f759a;
-}
-
-.course-list button:nth-child(2) {
-  background-color: #3998c8;
-  color: #333;
-}
-
-.course-list button:nth-child(2):hover {
-  background-color: #ffb300;
-}
-
-.course-description {
-  font-style: italic;
-  color: #666;
-  margin-top: -6px;
-  margin-bottom: 14px;
+.course-list button:hover {
+  background-color: #4a526a;
 }
 
 .no-courses {
   font-style: italic;
-  color: #999;
-  margin-top: 20px;
+  color: #9d9ea6;
 }
 
 .student-section {
@@ -108,13 +102,13 @@
 
 .student-table th,
 .student-table td {
-  border: 1px solid #ddd;
+  border: 1px solid #9d9ea6;
   padding: 12px;
   text-align: center;
 }
 
 .student-table th {
-  background-color: #f0f2f5;
+  background-color: #f0f8fe;
   font-weight: 600;
 }
 
@@ -128,15 +122,15 @@
   margin-left: 6px;
   padding: 6px 12px;
   font-size: 14px;
-  background-color: #2c3e50;
-  color: white;
+  background-color: #f1b294;
+  color: #f0f8fe;
   border: none;
   cursor: pointer;
   border-radius: 6px;
 }
 
 .add-btn:hover {
-  background-color: #4f759a;
+  background-color: #e6a684;
 }
 
 .attendance {
@@ -149,13 +143,13 @@
 }
 
 .attendance.present {
-  background-color: #3a4940;
-  color: white;
+  background-color: #576086;
+  color: #f0f8fe;
 }
 
 .attendance.absent {
-  background-color: #78261d;
-  color: white;
+  background-color: #f1b294;
+  color: #f0f8fe;
 }
 
 /* Modal Styling */
@@ -173,9 +167,9 @@
 }
 
 .modal {
-  background: #fff;
+  background: #e7ebef;
   padding: 2rem;
-  border-radius: 12px;
+  border-radius: 10px;
   width: 420px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
 }
@@ -197,26 +191,27 @@
   width: 100%;
   padding: 8px;
   margin-top: 4px;
-  border: 1px solid #ccc;
+  border: 1px solid #9d9ea6;
   border-radius: 6px;
   font-size: 14px;
 }
 
 .modal-buttons {
   display: flex;
-  justify-content: space-between;
-  margin-top: 1.5rem;
+  justify-content: center;
+  gap: 17px;
+  margin-top: 0.8rem;
 }
 
 .modal-buttons button {
-  padding: 8px 16px;
+  padding: 8px 10px;
   font-size: 14px;
   border-radius: 6px;
   cursor: pointer;
-  border: none;
+  border: 1px solid #9d9ea6;
 }
 
 button.danger {
-  background: #d33;
-  color: white;
+  background: #df7c66;
+  color: #f0f8fe;
 }
