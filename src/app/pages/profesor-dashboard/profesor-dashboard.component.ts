@@ -38,6 +38,14 @@ export class ProfesorDashboardComponent {
   async selectCourse(courseId: string) {
     this.selectedCourse = this.courses.find(c => c.id === courseId);
     this.enrolledStudents = await this.db.getStudentsInCourse(courseId);
+    // Fetch attendance summary per student
+    for (const student of this.enrolledStudents) {
+      const records = await this.db.getAttendanceForStudentInCourse(student.StudentId, courseId);
+      student.attendanceSummary = {
+        present: records.filter(r => r["status"] === 'present').length,
+        total: records.length
+      };
+    }
   }
 
   async markAttendance(studentId: string, status: string) {
@@ -78,29 +86,29 @@ export class ProfesorDashboardComponent {
 
   openEditor(course: any) {
     this.selectedCourse = course;
-    this.editingCourse = { ...course }; 
+    this.editingCourse = { ...course };
   }
-  
+
   closeModal() {
     this.editingCourse = null;
   }
 
-async saveCourseChanges() {
-  if (!this.selectedCourse || !this.editingCourse.Name?.trim()) {
-    alert('Course must have a name.');
-    return;
+  async saveCourseChanges() {
+    if (!this.selectedCourse || !this.editingCourse.Name?.trim()) {
+      alert('Course must have a name.');
+      return;
+    }
+
+    await this.db.updateCourse(this.selectedCourse.id, {
+      Name: this.editingCourse.Name,
+      SchoolId: this.editingCourse.SchoolId,
+      Description: this.editingCourse.Description || ''
+    });
+
+    this.editingCourse = null;
+    this.courses = await this.db.getCoursesByProfessor(this.professorId);
+    alert('Course updated.');
   }
-
-  await this.db.updateCourse(this.selectedCourse.id, {
-    Name: this.editingCourse.Name,
-    SchoolId: this.editingCourse.SchoolId,
-    Description: this.editingCourse.Description || ''
-  });
-
-  this.editingCourse = null;
-  this.courses = await this.db.getCoursesByProfessor(this.professorId);
-  alert('Course updated.');
-}
 
   async updateCourse() {
     if (!this.selectedCourse) return;

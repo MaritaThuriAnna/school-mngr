@@ -116,6 +116,16 @@ export class FirestoreService {
     };
   }
 
+  async getAttendanceForStudentInCourse(studentId: string, courseId: string) {
+    const attendanceRef = collection(this.firestore, 'Attendance');
+    const q = query(attendanceRef,
+      where('studentId', '==', studentId),
+      where('courseId', '==', courseId)
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => doc.data());
+  }
+  
 
   // Get all enrollments for a student
   async getEnrollmentsByStudent(studentId: string) {
