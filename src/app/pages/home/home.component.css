@@ -1,0 +1,118 @@
+.container {
+    display: flex;
+    height: auto;
+    width: auto;
+}
+
+.section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.first-section {
+    background-color: #f1b294;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.side-image {
+    max-width: 90%;
+    max-height: 100%;
+    border-radius: 12px;
+}
+
+.greet-section {
+    background-color: #576086;
+    color: #f0f8fe;
+    text-align: right;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.greet-section .content {
+    max-width: 400px;
+}
+
+.title-text {
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.greet-section p {
+    font-size: 20px;
+    margin: 10px 0 20px;
+    line-height: 1.4;
+}
+
+button {
+    padding: 12px 24px;
+    font-size: 18px;
+    color: #576086;
+    background-color: #f1b294;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    background-color: #e3906a;
+    color: #c2c8e3;
+    transform: translateY(-2px);
+}
+
+@media only screen and (max-width: 600px) {
+    .container {
+        display: flex;
+        flex-direction: column;
+        height: 95vh;
+        overflow: hidden;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .first-section {
+        display: none;
+    }
+
+    .greet-section {
+        flex: 1;
+        padding: 20px;
+        background-color: #576086;
+        text-align: center;
+        color: #f0f8fe;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .greet-section .title-text {
+        font-size: 32px;
+        margin-bottom: 10px;
+    }
+
+    .greet-section p {
+        margin: 10px 0;
+        font-size: 18px;
+    }
+
+    .greet-section button {
+        padding: 10px 20px;
+        background-color: #f1b294;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .greet-section button:hover {
+        background-color: #9d9ea6;
+    }
+}

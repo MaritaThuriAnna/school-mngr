@@ -1,53 +1,49 @@
 <div class="background-container">
-    <div class="right-section"></div>
-    <div class="auth-container">
+  <div class="auth-container">
       <form #authForm="ngForm" class="form" (ngSubmit)="onSubmit(authForm)">
-        <h2 id="heading">
-          {{ isResetting ? "Reset Password" : (isRegistering ? "Register" : "Login") }}
-        </h2>
-        <input
-          class="input"
-          [(ngModel)]="email"
-          name="email"
-          placeholder="Email"
-          type="email"
-        />
-        <ng-container *ngIf="!isResetting">
+          <h2 id="heading">
+              {{ isResetting ? "Reset Password" : (isRegistering ? "Register" : "Login") }}
+          </h2>
           <input
-            class="input"
-            [(ngModel)]="password"
-            name="password"
-            placeholder="Password"
-            type="password"
+              class="input"
+              [(ngModel)]="email"
+              name="email"
+              placeholder="Email"
+              type="email"
           />
-          <input
-            *ngIf="isRegistering"
-            class="input"
-            [(ngModel)]="confirmPassword"
-            name="confirmPassword"
-            placeholder="Confirm Password"
-            type="password"
-          />
-        </ng-container>
-        <div class="button-container">
-          <button class="button-confirm" type="submit">
-            {{ isResetting ? "Send Reset Link" : (isRegistering ? "Sign Up" : "Login") }}
-          </button>
-        </div>
-  
-        <p *ngIf="resetMessage" class="reset-message">{{ resetMessage }}</p>
-  
-        <p class="auth-links">
-          <a *ngIf="!isResetting" class="reset-link" (click)="toggleReset()">Forgot password?  </a>
-          <a *ngIf="isResetting" class="reset-link" (click)="toggleReset()">Back to Login!    </a>
-          
-          <span class="divider">|</span>
-  
-          <a (click)="toggleMode()"> Go to {{ isRegistering ? "Login!  " : "Sign Up!" }}</a>
-        </p>
-        </form>
-    </div>
-    
-    
+          <ng-container *ngIf="!isResetting">
+              <input
+                  class="input"
+                  [(ngModel)]="password"
+                  name="password"
+                  placeholder="Password"
+                  type="password"
+              />
+              <input
+                  *ngIf="isRegistering"
+                  class="input"
+                  [(ngModel)]="confirmPassword"
+                  name="confirmPassword"
+                  placeholder="Confirm Password"
+                  type="password"
+              />
+          </ng-container>
+          <div class="button-container">
+              <button class="button-confirm" type="submit">
+                  {{ isResetting ? "Send Reset Link" : (isRegistering ? "Sign Up" : "Login") }}
+              </button>
+          </div>
+
+          <p *ngIf="resetMessage" class="reset-message">{{ resetMessage }}</p>
+
+          <p class="auth-links">
+              <a *ngIf="!isResetting" class="reset-link" (click)="toggleReset()">Forgot password?</a>
+              <a *ngIf="isResetting" class="reset-link" (click)="toggleReset()">Back to Login!</a>
+              
+              <span class="divider">|</span>
+
+              <a (click)="toggleMode()"> Go to {{ isRegistering ? "Login!" : "Sign Up!" }}</a>
+          </p>
+      </form>
   </div>
-  
+</div>
