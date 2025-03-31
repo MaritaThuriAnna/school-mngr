@@ -1,0 +1,25 @@
+<h2 class="title">Student Dashboard</h2>
+
+<div *ngFor="let course of enrolledCourses" class="course-card">
+    <h3>{{ course.name }}</h3>
+
+    <p><strong>Grades:</strong> {{ course.grades.join(', ') || '—' }}</p>
+    <p><strong>Average:</strong> {{ course.average }}</p>
+
+    <div *ngIf="course.attendance.length > 0">
+        <p><strong>Attendance:</strong></p>
+        <ul>
+            <li *ngFor="let att of course.attendance">
+                {{ att.Date?.toDate()?.toLocaleDateString() }} –
+                <span [ngClass]="att.Status">{{ att.Status }}</span>
+            </li>
+        </ul>
+    </div>
+
+    <div *ngIf="course.attendance.length === 0">
+        <p>No attendance recorded.</p>
+    </div>
+</div>
+
+<hr />
+<h3 class="general-average">General Average: {{ generalAverage }}</h3>
