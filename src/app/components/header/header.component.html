@@ -1,9 +1,17 @@
 <header class="header">
     <div class="logo">School Manager</div>
-    <nav class="nav">
-        <a routerLink="/home" class="nav-link">Home</a>
-        <a routerLink="/courses" class="nav-link">Courses</a>
-        <a routerLink="/profile" class="nav-link">Profile</a>
-        <a routerLink="/auth" class="nav-link">Logout</a>
+    <div class="menu-toggle" (click)="toggleMenu()">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+
+    <nav class="nav" [class.show]="menuOpen">
+        <a class="nav-link" (click)="navigateTo('home')">Home</a>
+        <a class="nav-link" (click)="navigateTo('profesor-dashboard')">Dashboard</a>
+        <a class="nav-link" (click)="navigateTo('profile')">Profile</a>
+        <a *ngIf="!isAuthenticated" class="auth-button" (click)="goToLogin()">Login</a>
+        <a *ngIf="isAuthenticated" class="auth-button" (click)="goToLogout()">Logout</a>
+
     </nav>
 </header>

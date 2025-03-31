@@ -11,14 +11,15 @@ import { provideFirestore, getFirestore } from '@angular/fire/firestore';
 import { AdminDashboardComponent } from './app/pages/admin-dashboard/admin-dashboard.component';
 import { ProfesorDashboardComponent } from './app/pages/profesor-dashboard/profesor-dashboard.component';
 import { StudentDashboardComponent } from './app/pages/student-dashboard/student-dashboard.component';
+import { AuthGuard } from './app/pages/login/auth.guard';
 
 const routes: Routes = [
   { path: 'home', component: HomeComponent },
   { path: '', component: HomeComponent },
   { path: 'auth', component: LoginComponent },
-  { path: 'admin-dashboard', component: AdminDashboardComponent },
-  { path: 'profesor-dashboard', component: ProfesorDashboardComponent },
-  { path: 'student-dashboard', component: StudentDashboardComponent },
+  { path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [AuthGuard] },
+  { path: 'profesor-dashboard', component: ProfesorDashboardComponent,  canActivate: [AuthGuard]  },
+  { path: 'student-dashboard', component: StudentDashboardComponent,  canActivate: [AuthGuard]  },
 ];
 
 bootstrapApplication(AppComponent, {
