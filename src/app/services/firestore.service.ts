@@ -125,7 +125,7 @@ export class FirestoreService {
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => doc.data());
   }
-  
+
 
   // Get all enrollments for a student
   async getEnrollmentsByStudent(studentId: string) {
@@ -203,6 +203,24 @@ export class FirestoreService {
   async deleteCourse(courseId: string) {
     const courseRef = doc(this.firestore, 'Course', courseId);
     await deleteDoc(courseRef);
+  }
+
+
+  // Get full user data by ID
+  async getUserDataById(userId: string) {
+    console.log('[FirestoreService] Fetching user data for ID:', userId);
+
+    const userRef = doc(this.firestore, 'User', userId);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      console.warn('[FirestoreService] No user data found for ID:', userId);
+      return null;
+    }
+
+    const userData = userSnap.data();
+    console.log('[FirestoreService] User data retrieved:', userData);
+    return userData;
   }
 
 }

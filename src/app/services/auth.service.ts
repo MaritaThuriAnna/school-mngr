@@ -5,6 +5,7 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { User } from '../models/user.model';
 import { doc, Firestore, getDoc, setDoc } from '@angular/fire/firestore';
+import { FirestoreService } from './firestore.service';
 
 
 interface AuthResponseData {
@@ -25,7 +26,8 @@ export class AuthService {
   constructor(
     private http: HttpClient, 
     private router: Router,
-    private firestore: Firestore
+    private firestore: Firestore,
+    private firestoreService: FirestoreService
   ) {
     this.autoLogin();
   }
@@ -101,29 +103,6 @@ export class AuthService {
       );
   }
 
-//   login(email: string, password: string) {
-//     return this.http
-//       .post<AuthResponseData>(
-//         `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${this.apiKey}`,
-//         {
-//           email: email,
-//           password: password,
-//           returnSecureToken: true,
-//         }
-//       )
-//       .pipe(
-//         tap((response) => {
-//           this.handleAuthentication(
-//             response.email,
-//             response.localId,
-//             response.idToken,
-//             +response.expiresIn
-//           );
-//           // this.user.next(response);
-//           this.router.navigate(['track']);
-//         })
-//       );
-//   }
 
   resetPassword(email: string) {
     return this.http.post(
@@ -182,5 +161,36 @@ export class AuthService {
     if (loadedUser.token) {
       this.user.next(loadedUser);
     }
+  }
+
+  async getCurrentUserData(): Promise<any> {
+    const currentUser = this.user.getValue();
+    if (!currentUser) {
+      console.warn('[AuthService] No user is currently logged in.');
+      return null;
+    }
+  
+    console.log('[AuthService] Getting full data for user ID:', currentUser.id);
+    const userData = await this.firestoreService.getUserDataById(currentUser.id);
+    
+    if (userData) {
+      console.log('[AuthService] Full user data retrieved:', userData);
+      return userData;
+    } else {
+      console.warn('[AuthService] User data not found in Firestore.');
+      return null;
+    }
+  }
+  
+
+  updateUserProfile(user: any): Promise<void> {
+    console.log('[AuthService] Updating user profile:', user);
+    this.user.next(user);
+    return Promise.resolve();
+  }
+
+  updatePassword(newPassword: string): Promise<void> {
+    console.log('[AuthService] Updating user password.');
+    return Promise.resolve();
   }
 }

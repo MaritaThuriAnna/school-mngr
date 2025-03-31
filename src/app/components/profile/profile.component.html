@@ -1,1 +1,25 @@
-<p>profile works!</p>
+<div class="profile-container">
+  <div class="profile-card">
+    <h2 class="profile-title">User Profile</h2>
+
+    <div class="profile-info">
+      <p><strong>Name:</strong> {{ user?.name }}</p>
+      <p><strong>Email:</strong> {{ user?.email }}</p>
+    </div>
+
+    <div *ngIf="editing" class="editing">
+      <label>Name:</label>
+      <input [(ngModel)]="user.name" />
+
+      <label>Email:</label>
+      <input [(ngModel)]="user.email" />
+
+      <button (click)="saveChanges()">Save</button>
+      <button (click)="toggleEdit()">Cancel</button>
+    </div>
+
+    <div *ngIf="!editing">
+      <button (click)="toggleEdit()">Edit Profile</button>
+    </div>
+  </div>
+</div>

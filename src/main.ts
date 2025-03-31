@@ -12,6 +12,7 @@ import { AdminDashboardComponent } from './app/pages/admin-dashboard/admin-dashb
 import { ProfesorDashboardComponent } from './app/pages/profesor-dashboard/profesor-dashboard.component';
 import { StudentDashboardComponent } from './app/pages/student-dashboard/student-dashboard.component';
 import { AuthGuard } from './app/pages/login/auth.guard';
+import { ProfileComponent } from './app/components/profile/profile.component';
 
 const routes: Routes = [
   { path: 'home', component: HomeComponent },
@@ -19,6 +20,7 @@ const routes: Routes = [
   { path: 'auth', component: LoginComponent },
   { path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [AuthGuard] },
   { path: 'profesor-dashboard', component: ProfesorDashboardComponent,  canActivate: [AuthGuard]  },
+  {path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
   { path: 'student-dashboard', component: StudentDashboardComponent,  canActivate: [AuthGuard]  },
 ];
 
