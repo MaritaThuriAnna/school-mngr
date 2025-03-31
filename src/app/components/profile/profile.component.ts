@@ -19,8 +19,7 @@ export class ProfileComponent implements OnInit {
   profilePicture: string = 'assets/default-avatar.png';
 
   constructor(
-    private authService: AuthService,
-    private router: Router) { }
+    private authService: AuthService) { }
 
   async ngOnInit(): Promise<void> {
     try {
@@ -30,8 +29,10 @@ export class ProfileComponent implements OnInit {
 
       // Prepopulate the form fields with user data
       if (this.user) {
-        this.newName = this.user.Name;
-        this.newEmail = this.user.Email;
+        this.newName = this.user.name || '';
+        this.newEmail = this.user.email || '';
+        this.profilePicture = this.user.profilePicture || 'default-avatar.png';
+        console.log("Initialized name and email: ", this.newName, this.newEmail);
       } else {
         console.warn('No user data found.');
       }
@@ -42,46 +43,32 @@ export class ProfileComponent implements OnInit {
 
   toggleEdit(): void {
     this.editing = !this.editing;
-    // Prepopulate the fields when editing is enabled
-    if (this.editing && this.user) {
-      this.newName = this.user.Name;
-      this.newEmail = this.user.Email;
-    }
   }
 
   saveChanges(): void {
-    if (this.newName.trim() && this.newEmail.trim()) {
-      this.user.name = this.newName;
-      this.user.email = this.newEmail;
-      // Update user info in the database
-      this.authService.updateUserProfile(this.user).then(() => {
-        alert('Profile updated successfully!');
-        this.editing = false;
-      });
-    } else {
-      alert('Name and Email cannot be empty!');
-    }
+    this.user.profilePicture = this.profilePicture;
+    const updatedFields: any = {};
+    if (this.user.profilePicture) updatedFields.profilePicture = this.user.profilePicture;
+
+    this.authService.updateUserProfile(this.user).then(() => {
+      alert('Profile updated successfully!');
+      this.editing = false;
+    }).catch((error) => {
+      console.error('Error updating profile: ', error);
+      alert('Failed to update profile!');
+    });
   }
 
-  changePassword(): void {
-    if (this.newPassword.trim()) {
-      this.authService.updatePassword(this.newPassword).then(() => {
-        alert('Password changed successfully!');
-        this.newPassword = '';
-      }).catch((error) => {
-        alert('Error changing password: ' + error.message);
-      });
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.profilePicture = reader.result as string;
+        this.user.profilePicture = this.profilePicture;
+      };
+      reader.readAsDataURL(file);
     }
   }
-
-  // onProfilePictureChange(event: any): void {
-  //   const file = event.target.files[0];
-  //   if (file) {
-  //     const reader = new FileReader();
-  //     reader.onload = () => {
-  //       this.profilePicture = reader.result as string;
-  //     };
-  //     reader.readAsDataURL(file);
-  //   }
-  // }
 }

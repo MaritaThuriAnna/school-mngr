@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { User } from '../models/user.model';
-import { doc, Firestore, getDoc, setDoc } from '@angular/fire/firestore';
+import { doc, Firestore, getDoc, setDoc, updateDoc } from '@angular/fire/firestore';
 import { FirestoreService } from './firestore.service';
 
 
@@ -185,9 +185,18 @@ export class AuthService {
 
   updateUserProfile(user: any): Promise<void> {
     console.log('[AuthService] Updating user profile:', user);
-    this.user.next(user);
-    return Promise.resolve();
-  }
+    
+    // Filter out undefined or empty fields
+    const filteredUser = Object.keys(user).reduce((acc, key) => {
+      if (user[key] !== undefined && user[key] !== '') {
+        acc[key] = user[key];
+      }
+      return acc;
+    }, {} as any);
+  
+    const userDocRef = doc(this.firestore, 'User', user.id);
+    return updateDoc(userDocRef, filteredUser);
+  }  
 
   updatePassword(newPassword: string): Promise<void> {
     console.log('[AuthService] Updating user password.');

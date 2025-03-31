@@ -13,6 +13,7 @@ import { ProfesorDashboardComponent } from './app/pages/profesor-dashboard/profe
 import { StudentDashboardComponent } from './app/pages/student-dashboard/student-dashboard.component';
 import { AuthGuard } from './app/pages/login/auth.guard';
 import { ProfileComponent } from './app/components/profile/profile.component';
+import { provideStorage, getStorage } from '@angular/fire/storage';
 
 const routes: Routes = [
   { path: 'home', component: HomeComponent },
@@ -31,5 +32,6 @@ bootstrapApplication(AppComponent, {
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
     provideFirestore(() => getFirestore()),
     provideDatabase(() => getDatabase()),
+    provideStorage(() => getStorage()),
   ],
 });
