@@ -3,8 +3,12 @@ body {
     font-family: 'Arial', sans-serif;
     background-color: #dee6ed;
     margin: 0;
-    padding: 20px;
+    padding: 0px;
     color: #576086;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 body,
