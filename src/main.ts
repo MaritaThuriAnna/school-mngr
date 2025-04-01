@@ -14,6 +14,11 @@ import { StudentDashboardComponent } from './app/pages/student-dashboard/student
 import { AuthGuard } from './app/pages/login/auth.guard';
 import { ProfileComponent } from './app/components/profile/profile.component';
 import { provideStorage, getStorage } from '@angular/fire/storage';
+import { provideEffects } from '@ngrx/effects';
+import { provideStore } from '@ngrx/store';
+import { provideStoreDevtools } from '@ngrx/store-devtools';
+import { AuthEffects } from './app/state/auth/auth.effects';
+import { authReducer } from './app/state/auth/auth.reducer';
 
 const routes: Routes = [
   { path: 'home', component: HomeComponent },
@@ -33,5 +38,10 @@ bootstrapApplication(AppComponent, {
     provideFirestore(() => getFirestore()),
     provideDatabase(() => getDatabase()),
     provideStorage(() => getStorage()),
+
+    // NgRx Providers
+    provideStore({ auth: authReducer }),
+    provideEffects([AuthEffects]),
+    provideStoreDevtools()
   ],
 });

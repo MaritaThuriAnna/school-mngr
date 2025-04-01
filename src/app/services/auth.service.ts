@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { User } from '../models/user.model';
 import { doc, Firestore, getDoc, setDoc, updateDoc } from '@angular/fire/firestore';
 import { FirestoreService } from './firestore.service';
@@ -84,6 +84,45 @@ export class AuthService {
       );
   }
 
+  // login(email: string, password: string) {
+  //   return this.http
+  //     .post<AuthResponseData>(
+  //       `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${this.apiKey}`,
+  //       {
+  //         email,
+  //         password,
+  //         returnSecureToken: true,
+  //       }
+  //     )
+  //     .pipe(
+  //       tap(async (response) => {
+  //         this.handleAuthentication(
+  //           response.email,
+  //           response.localId,
+  //           response.idToken,
+  //           +response.expiresIn,
+  //           response.role,
+  //           response.name
+  //         );
+
+
+  //         const userDocRef = doc(this.firestore, 'User', response.localId);
+  //         const userSnap = await getDoc(userDocRef);
+  //         const userData = userSnap.data() as { role: string };
+
+  //         if (userData?.role === 'ADMIN') {
+  //           this.router.navigate(['admin-dashboard']);
+  //         } else if (userData?.role === 'PROFESOR') {
+  //           this.router.navigate(['profesor-dashboard']);
+  //         } else if (userData?.role === 'STUDENT') {
+  //           this.router.navigate(['student-dashboard']);
+  //         } else {
+  //           this.router.navigate(['/']);
+  //         }
+  //       })
+  //     );
+  // }
+
   login(email: string, password: string) {
     return this.http
       .post<AuthResponseData>(
@@ -95,34 +134,38 @@ export class AuthService {
         }
       )
       .pipe(
-        tap(async (response) => {
-          this.handleAuthentication(
+        map(response => {
+          const expirationDate = new Date(new Date().getTime() + +response.expiresIn * 1000);
+          
+          // Safely cast the role to one of the expected types
+          const role: 'ADMIN' | 'PROFESOR' | 'STUDENT' = 
+            ['ADMIN', 'PROFESOR', 'STUDENT'].includes(response.role) ? response.role as 'ADMIN' | 'PROFESOR' | 'STUDENT' : 'STUDENT';
+  
+          const user = new User(
             response.email,
             response.localId,
             response.idToken,
-            +response.expiresIn,
-            response.role,
-            response.name
+            expirationDate,
+            role,
+            response.name || response.email.split('@')[0]
           );
-
-          // 🔍 Fetch role from Firestore
-          const userDocRef = doc(this.firestore, 'User', response.localId);
-          const userSnap = await getDoc(userDocRef);
-          const userData = userSnap.data() as { role: string };
-
-          if (userData?.role === 'ADMIN') {
-            this.router.navigate(['admin-dashboard']);
-          } else if (userData?.role === 'PROFESOR') {
-            this.router.navigate(['profesor-dashboard']);
-          } else if (userData?.role === 'STUDENT') {
-            this.router.navigate(['student-dashboard']);
-          } else {
-            this.router.navigate(['/']);
-          }
+          
+          this.user.next(user); // Update the BehaviorSubject
+          return user; // Return the mapped user object
+        }),
+        tap((user) => {
+          this.handleAuthentication(
+            user.email,
+            user.id,
+            user.token!,
+            (user.tokenExpirationDate.getTime() - new Date().getTime()) / 1000, // Corrected getter usage
+            user.role,
+            user.name
+          );
+          localStorage.setItem('userData', JSON.stringify(user)); // Store user in local storage
         })
       );
   }
-
 
   resetPassword(email: string) {
     return this.http.post(

@@ -4,7 +4,7 @@ export class User {
       public id: string,
       private _token: string,
       private _tokenExpirationDate: Date,
-      public role: string,
+      public role: 'ADMIN' | 'PROFESOR' | 'STUDENT',
       public name: string
     ) {}
   
@@ -13,5 +13,9 @@ export class User {
         return null;
       }
       return this._token;
+    }
+
+    get tokenExpirationDate() {
+      return this._tokenExpirationDate;
     }
   }
