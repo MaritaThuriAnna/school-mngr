@@ -54,7 +54,7 @@ export class AuthService {
     return null;
   }
 
-  signup(email: string, password: string) {
+  signup(email: string, password: string, name: string, role: 'PROFESOR' | 'STUDENT') {
     return this.http
       .post<AuthResponseData>(
         `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${this.apiKey}`,
@@ -69,15 +69,15 @@ export class AuthService {
           this.sendVerificationEmail(response.idToken).subscribe(() =>
             console.log('Verification mail sent!')
           );
-
+  
           const userProfile = {
             id: response.localId,
             email,
-            name: email.split('@')[0],
-            role: 'STUDENT',
-            schoolId: 'schoolId1'
+            name,
+            role,
+            schoolId: 'HwIxpCjEXq9s6DlX2nJm'
           };
-
+  
           const userDocRef = doc(this.firestore, 'User', response.localId);
           await setDoc(userDocRef, userProfile);
         })

@@ -13,6 +13,8 @@ import { AuthService } from '../../services/auth.service';
 export class LoginComponent {
   email = '';
   password = '';
+  name = ''; 
+  role: 'PROFESOR' | 'STUDENT' = 'STUDENT';
   isRegistering = false;
   confirmPassword = '';
   isAuthenticated = false;
@@ -64,7 +66,7 @@ export class LoginComponent {
         return;
       }
 
-      this.authService.signup(this.email, this.password).pipe().subscribe({
+      this.authService.signup(this.email, this.password, this.name, this.role).pipe().subscribe({
         next: response => {
           console.log('User registered', response);
           this.isRegistering = false;
