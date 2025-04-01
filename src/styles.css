@@ -1,19 +1,13 @@
 /* You can add global styles to this file, and also import other style files */
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #dee6ed;
-    margin: 0;
-    padding: 0px;
-    color: #576086;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
 body,
 html {
     overflow: hidden;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-sizing: border-box;
 }
 
 body,
@@ -24,4 +18,6 @@ html {
 
 body::-webkit-scrollbar {
     display: none;
+    display: flex;
+    flex-direction: column;
 }

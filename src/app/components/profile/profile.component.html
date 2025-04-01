@@ -1,0 +1,35 @@
+<div class="profile-container">
+  <div class="profile-card">
+    <h2 class="profile-title">{{ user?.name }}</h2>
+
+    <!-- Profile Picture -->
+    <img [src]="profilePicture" alt="Profile Picture" class="profile-img" />
+
+    <!-- Static Profile Info -->
+    <div class="profile-info" *ngIf="!editing">
+      <p><strong> {{ user?.email }} </strong></p>
+      <p><strong>Bio:</strong> {{ user?.bio ? user?.bio : 'Not Set' }}</p>
+      <p><strong>Office Hours:</strong> {{ user?.officeHours ? user?.officeHours : 'Not Set' }}</p>
+      <button (click)="toggleEdit()">Edit Profile</button>
+    </div>
+
+    <!-- Editable Profile Info (in modal) -->
+    <div *ngIf="editing" class="editing">
+      <h3>Edit Profile</h3>
+
+      <label>Profile Picture:</label>
+      <input type="file" (change)="onFileSelected($event)" />
+
+      <label *ngIf="user?.bio">Bio:</label>
+      <textarea [(ngModel)]="user.bio" *ngIf="user?.bio"></textarea>
+
+      <label *ngIf="user?.officeHours">Office Hours:</label>
+      <input [(ngModel)]="user.officeHours" *ngIf="user?.officeHours" />
+
+      <div class="modal-buttons">
+        <button (click)="saveChanges()">Save</button>
+        <button (click)="toggleEdit()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

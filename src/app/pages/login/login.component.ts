@@ -75,7 +75,6 @@ export class LoginComponent {
       this.authService.login(this.email, this.password).pipe().subscribe({
         next: response => {
           console.log('User logged in!', response);
-          // this.router.navigate(['/track']);
         }
       });
     }

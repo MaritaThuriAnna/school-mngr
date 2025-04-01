@@ -1,6 +1,6 @@
 .container {
     display: flex;
-    height: auto;
+    height: 81.5%;
     width: auto;
 }
 
@@ -47,7 +47,7 @@
 .greet-section p {
     font-size: 20px;
     margin: 10px 0 20px;
-    line-height: 1.4;
+    line-height: 1.2;
 }
 
 button {
@@ -71,7 +71,7 @@ button:hover {
     .container {
         display: flex;
         flex-direction: column;
-        height: 95vh;
+        /* height: 95vh; */
         overflow: hidden;
         align-items: center;
         justify-content: center;

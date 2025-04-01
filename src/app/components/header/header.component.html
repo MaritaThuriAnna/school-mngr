@@ -1,0 +1,17 @@
+<header class="header">
+    <div class="logo">School Manager</div>
+    <div class="menu-toggle" (click)="toggleMenu()">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+
+    <nav class="nav" [class.show]="menuOpen">
+        <a class="nav-link" (click)="navigateTo('home')">Home</a>
+        <a class="nav-link" (click)="navigateTo(dashboardRoute)">Dashboard</a>
+        <a class="nav-link" (click)="navigateTo('profile')">Profile</a>
+        <a *ngIf="!isAuthenticated" class="auth-button" (click)="goToLogin()">Login</a>
+        <a *ngIf="isAuthenticated" class="auth-button" (click)="goToLogout()">Logout</a>
+
+    </nav>
+</header>
