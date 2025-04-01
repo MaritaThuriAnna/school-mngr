@@ -9,22 +9,23 @@ import { FirestoreService } from './firestore.service';
 
 
 interface AuthResponseData {
-    idToken: string;
-    email: string;
-    refreshToken: string;
-    expiresIn: string;
-    localId: string;
-    role: 'ADMIN' | 'PROFESOR' | 'STUDENT';
-    name: string;
+  idToken: string;
+  email: string;
+  refreshToken: string;
+  expiresIn: string;
+  localId: string;
+  role: 'ADMIN' | 'PROFESOR' | 'STUDENT';
+  name: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private apiKey = 'AIzaSyDfv-YCtjXt68XnGul0LcK06eiSyMW6394';
   user = new BehaviorSubject<User | null>(null);
+  role$ = new BehaviorSubject<string | null>(null);
 
   constructor(
-    private http: HttpClient, 
+    private http: HttpClient,
     private router: Router,
     private firestore: Firestore,
     private firestoreService: FirestoreService
@@ -34,6 +35,23 @@ export class AuthService {
 
   getId() {
     return this.user.getValue()?.id;
+  }
+
+  async getRole(): Promise<string | null> {
+    if (this.role$.getValue()) {
+      return this.role$.getValue();
+    }
+
+    const currentUser = this.user.getValue();
+    if (currentUser) {
+      const userData = await this.firestoreService.getUserDataById(currentUser.id);
+      if (userData?.['role']) {
+        this.role$.next(userData['role']);
+        return userData['role'];
+      }
+    }
+
+    return null;
   }
 
   signup(email: string, password: string) {
@@ -51,7 +69,7 @@ export class AuthService {
           this.sendVerificationEmail(response.idToken).subscribe(() =>
             console.log('Verification mail sent!')
           );
-  
+
           const userProfile = {
             id: response.localId,
             email,
@@ -59,7 +77,7 @@ export class AuthService {
             role: 'STUDENT',
             schoolId: 'schoolId1'
           };
-  
+
           const userDocRef = doc(this.firestore, 'User', response.localId);
           await setDoc(userDocRef, userProfile);
         })
@@ -82,14 +100,16 @@ export class AuthService {
             response.email,
             response.localId,
             response.idToken,
-            +response.expiresIn
+            +response.expiresIn,
+            response.role,
+            response.name
           );
-  
+
           // 🔍 Fetch role from Firestore
           const userDocRef = doc(this.firestore, 'User', response.localId);
           const userSnap = await getDoc(userDocRef);
           const userData = userSnap.data() as { role: string };
-  
+
           if (userData?.role === 'ADMIN') {
             this.router.navigate(['admin-dashboard']);
           } else if (userData?.role === 'PROFESOR') {
@@ -134,10 +154,12 @@ export class AuthService {
     email: string,
     userId: string,
     token: string,
-    expiresIn: number
+    expiresIn: number,
+    role: 'ADMIN' | 'PROFESOR' | 'STUDENT',
+    name: string
   ) {
     const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
-    const user = new User(email, userId, token, expirationDate);
+    const user = new User(email, userId, token, expirationDate, role, name);
     this.user.next(user);
     localStorage.setItem('userData', JSON.stringify(user)); // Store user in local storage
   }
@@ -148,6 +170,8 @@ export class AuthService {
       id: string;
       _token: string;
       _tokenExpirationDate: string;
+      role: 'ADMIN' | 'PROFESOR' | 'STUDENT';
+      name: string
     } = JSON.parse(localStorage.getItem('userData')!);
     if (!userData) {
       return;
@@ -156,7 +180,9 @@ export class AuthService {
       userData.email,
       userData.id,
       userData._token,
-      new Date(userData._tokenExpirationDate)
+      new Date(userData._tokenExpirationDate),
+      userData.role,
+      userData.name
     );
     if (loadedUser.token) {
       this.user.next(loadedUser);
@@ -169,10 +195,10 @@ export class AuthService {
       console.warn('[AuthService] No user is currently logged in.');
       return null;
     }
-  
+
     console.log('[AuthService] Getting full data for user ID:', currentUser.id);
     const userData = await this.firestoreService.getUserDataById(currentUser.id);
-    
+
     if (userData) {
       console.log('[AuthService] Full user data retrieved:', userData);
       return userData;
@@ -181,11 +207,10 @@ export class AuthService {
       return null;
     }
   }
-  
 
   updateUserProfile(user: any): Promise<void> {
     console.log('[AuthService] Updating user profile:', user);
-    
+
     // Filter out undefined or empty fields
     const filteredUser = Object.keys(user).reduce((acc, key) => {
       if (user[key] !== undefined && user[key] !== '') {
@@ -193,10 +218,10 @@ export class AuthService {
       }
       return acc;
     }, {} as any);
-  
+
     const userDocRef = doc(this.firestore, 'User', user.id);
     return updateDoc(userDocRef, filteredUser);
-  }  
+  }
 
   updatePassword(newPassword: string): Promise<void> {
     console.log('[AuthService] Updating user password.');
