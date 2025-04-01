@@ -1,8 +1,12 @@
-import { Component} from '@angular/core';
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { Store } from '@ngrx/store';
+import { selectIsAuthenticated } from '../../state/auth/auth.selectors';
+import { Observable } from 'rxjs';
+import { login } from '../../state/auth/auth.actions';
 
 @Component({
   selector: 'app-login',
@@ -13,24 +17,31 @@ import { AuthService } from '../../services/auth.service';
 export class LoginComponent {
   email = '';
   password = '';
-  name = ''; 
+  name = '';
   role: 'PROFESOR' | 'STUDENT' = 'STUDENT';
   isRegistering = false;
   confirmPassword = '';
-  isAuthenticated = false;
+  isAuthenticated$!: Observable<boolean>;
   isResetting = false;
   resetMessage: string = '';
 
   constructor(
     private router: Router,
+    private store: Store,
     private authService: AuthService) { }
 
-  ngOnInit() {
-    this.authService.user.subscribe(user => {
-      this.isAuthenticated = !!user;
-    })
-  }
-
+    ngOnInit() {
+      // Use NgRx store to get authentication status
+      this.isAuthenticated$ = this.store.select(selectIsAuthenticated);
+  
+      // Redirect to dashboard if the user is already authenticated
+      this.isAuthenticated$.subscribe(isAuthenticated => {
+        if (isAuthenticated) {
+          this.router.navigate(['/dashboard']);
+        }
+      });
+    }
+  
   toggleMode() {
     this.isRegistering = !this.isRegistering;
     this.confirmPassword = '';
@@ -48,7 +59,6 @@ export class LoginComponent {
     if (!form.valid) {
       return;
     }
-
 
     if (this.isResetting) {
       this.authService.resetPassword(this.email).pipe().subscribe(
@@ -74,11 +84,12 @@ export class LoginComponent {
         }
       });
     } else {
-      this.authService.login(this.email, this.password).pipe().subscribe({
-        next: response => {
-          console.log('User logged in!', response);
-        }
-      });
+      // this.authService.login(this.email, this.password).pipe().subscribe({
+      //   next: response => {
+      //     console.log('User logged in!', response);
+      //   }
+      // });
+      this.store.dispatch(login({ email: this.email, password: this.password }));
     }
 
     form.reset();
@@ -89,5 +100,5 @@ export class LoginComponent {
       this.resetMessage = "Please enter your email.";
       return;
     }
-}
+  }
 }
