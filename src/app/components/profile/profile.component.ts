@@ -1,44 +1,51 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
-import { NgIf } from '@angular/common';
+import { NgIf, AsyncPipe } from '@angular/common';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
+import { User } from '../../models/user.model';
+import { selectUserProfile } from '../../state/user/user.selectors';
+import { loadUserProfile, updateUserProfile } from '../../state/user/user.actions';
+import { tap } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-profile',
-  imports: [NgIf, FormsModule],
+  standalone: true,
+  imports: [NgIf, FormsModule, AsyncPipe],
   templateUrl: './profile.component.html',
-  styleUrl: './profile.component.css'
+  styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
-  user: any;
+  user$!: Observable<User | null>;
+  user: User | null = null;
   editing = false;
-  newName: string = '';
-  newEmail: string = '';
-  newPassword: string = '';
-  profilePicture: string = 'assets/default-avatar.png';
+  newName = '';
+  newEmail = '';
+  bio = '';
+  officeHours = '';
+  profilePicture = 'default-avatar.png';
 
-  constructor(
-    private authService: AuthService) { }
+  constructor(private store: Store) {
+    this.user$ = this.store.select(selectUserProfile);
+  }
 
-  async ngOnInit(): Promise<void> {
-    try {
-      // Fetch current user data
-      this.user = await this.authService.getCurrentUserData();
-      console.log("Fetched user: ", this.user);
+  ngOnInit(): void {
+    console.log('Dispatching loadUserProfile action');
+    this.store.dispatch(loadUserProfile());
 
-      // Prepopulate the form fields with user data
-      if (this.user) {
-        this.newName = this.user.name || '';
-        this.newEmail = this.user.email || '';
-        this.profilePicture = this.user.profilePicture || 'default-avatar.png';
-        console.log("Initialized name and email: ", this.newName, this.newEmail);
+    this.user$.subscribe((user) => {
+      console.log('User from store:', user);
+      if (user) {
+        this.user = user;
+        this.newName = user.name || '';
+        this.newEmail = user.email || '';
+        this.bio = user.bio || '';
+        this.officeHours = user.officeHours || '';
+        this.profilePicture = user.profilePicture || 'assets/default-avatar.png';
       } else {
-        console.warn('No user data found.');
+        console.warn('No user data in store yet.');
       }
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-    }
+    });
   }
 
   toggleEdit(): void {
@@ -46,19 +53,27 @@ export class ProfileComponent implements OnInit {
   }
 
   saveChanges(): void {
-    this.user.profilePicture = this.profilePicture;
-    const updatedFields: any = {};
-    if (this.user.profilePicture) updatedFields.profilePicture = this.user.profilePicture;
-
-    this.authService.updateUserProfile(this.user).then(() => {
+    if (this.user) {
+      const updatedUser = new User(
+        this.newEmail || this.user.email,
+        this.user.id,
+        this.user.token!,
+        this.user.tokenExpirationDate!,
+        this.user.role,
+        this.newName || this.user.name,
+        this.profilePicture || this.user.profilePicture,
+        this.bio || this.user.bio,
+        this.officeHours || this.user.officeHours
+      );
+      this.store.dispatch(updateUserProfile({ user: updatedUser }));
+      // Reload the profile data after update
+      this.store.dispatch(loadUserProfile());
       alert('Profile updated successfully!');
       this.editing = false;
-    }).catch((error) => {
-      console.error('Error updating profile: ', error);
-      alert('Failed to update profile!');
-    });
+    } else {
+      alert('No user data available to update.');
+    }
   }
-
 
   onFileSelected(event: any): void {
     const file = event.target.files[0];
@@ -66,7 +81,6 @@ export class ProfileComponent implements OnInit {
       const reader = new FileReader();
       reader.onload = () => {
         this.profilePicture = reader.result as string;
-        this.user.profilePicture = this.profilePicture;
       };
       reader.readAsDataURL(file);
     }

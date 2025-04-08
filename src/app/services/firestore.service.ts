@@ -210,7 +210,7 @@ export class FirestoreService {
   async getUserDataById(userId: string) {
     console.log('[FirestoreService] Fetching user data for ID:', userId);
 
-    const userRef = doc(this.firestore, 'User', userId);
+    const userRef = await doc(this.firestore, 'User', userId);
     const userSnap = await getDoc(userRef);
 
     if (!userSnap.exists()) {
