@@ -16,6 +16,9 @@ interface AuthResponseData {
   localId: string;
   role: 'ADMIN' | 'PROFESOR' | 'STUDENT';
   name: string;
+  profilePicture: string,
+  bio: string;
+  officeHours: string
 }
 
 @Injectable({ providedIn: 'root' })
@@ -84,45 +87,6 @@ export class AuthService {
       );
   }
 
-  // login(email: string, password: string) {
-  //   return this.http
-  //     .post<AuthResponseData>(
-  //       `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${this.apiKey}`,
-  //       {
-  //         email,
-  //         password,
-  //         returnSecureToken: true,
-  //       }
-  //     )
-  //     .pipe(
-  //       tap(async (response) => {
-  //         this.handleAuthentication(
-  //           response.email,
-  //           response.localId,
-  //           response.idToken,
-  //           +response.expiresIn,
-  //           response.role,
-  //           response.name
-  //         );
-
-
-  //         const userDocRef = doc(this.firestore, 'User', response.localId);
-  //         const userSnap = await getDoc(userDocRef);
-  //         const userData = userSnap.data() as { role: string };
-
-  //         if (userData?.role === 'ADMIN') {
-  //           this.router.navigate(['admin-dashboard']);
-  //         } else if (userData?.role === 'PROFESOR') {
-  //           this.router.navigate(['profesor-dashboard']);
-  //         } else if (userData?.role === 'STUDENT') {
-  //           this.router.navigate(['student-dashboard']);
-  //         } else {
-  //           this.router.navigate(['/']);
-  //         }
-  //       })
-  //     );
-  // }
-
   login(email: string, password: string) {
     return this.http
       .post<AuthResponseData>(
@@ -147,7 +111,10 @@ export class AuthService {
             response.idToken,
             expirationDate,
             role,
-            response.name || response.email.split('@')[0]
+            response.name || response.email.split('@')[0],
+            response.profilePicture,
+            response.bio,
+            response.officeHours
           );
           
           this.user.next(user); // Update the BehaviorSubject
@@ -160,7 +127,10 @@ export class AuthService {
             user.token!,
             (user.tokenExpirationDate.getTime() - new Date().getTime()) / 1000, // Corrected getter usage
             user.role,
-            user.name
+            user.name,
+            user.profilePicture,
+            user.bio,
+            user.officeHours
           );
           localStorage.setItem('userData', JSON.stringify(user)); // Store user in local storage
         })
@@ -199,10 +169,13 @@ export class AuthService {
     token: string,
     expiresIn: number,
     role: 'ADMIN' | 'PROFESOR' | 'STUDENT',
-    name: string
+    name: string,
+    profilePicture: string,
+    bio: string,
+    officeHours: string
   ) {
     const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
-    const user = new User(email, userId, token, expirationDate, role, name);
+    const user = new User(email, userId, token, expirationDate, role, name, profilePicture, bio, officeHours);
     this.user.next(user);
     localStorage.setItem('userData', JSON.stringify(user)); // Store user in local storage
   }
@@ -214,7 +187,10 @@ export class AuthService {
       _token: string;
       _tokenExpirationDate: string;
       role: 'ADMIN' | 'PROFESOR' | 'STUDENT';
-      name: string
+      name: string;
+      profilePicture: string,
+      bio: string,
+      officeHours: string
     } = JSON.parse(localStorage.getItem('userData')!);
     if (!userData) {
       return;
@@ -225,7 +201,10 @@ export class AuthService {
       userData._token,
       new Date(userData._tokenExpirationDate),
       userData.role,
-      userData.name
+      userData.name,
+      userData.profilePicture,
+      userData.bio,
+      userData.officeHours
     );
     if (loadedUser.token) {
       this.user.next(loadedUser);

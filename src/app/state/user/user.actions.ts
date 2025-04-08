@@ -1,31 +1,21 @@
 import { createAction, props } from '@ngrx/store';
 import { User } from '../../models/user.model';
 
-// Load User Data
-export const loadUser = createAction('[User] Load User');
-
-export const loadUserSuccess = createAction(
-  '[User] Load User Success',
+export const loadUserProfile = createAction('[User] Load Profile');
+export const loadUserProfileSuccess = createAction(
+  '[User] Load Profile Success',
   props<{ user: User }>()
 );
-
-export const loadUserFailure = createAction(
-  '[User] Load User Failure',
-  props<{ error: string }>()
-);
-
-// Update User Data
-export const updateUser = createAction(
-  '[User] Update User',
+export const updateUserProfile = createAction(
+  '[User] Update Profile',
   props<{ user: Partial<User> }>()
 );
 
-export const updateUserSuccess = createAction(
-  '[User] Update User Success',
-  props<{ user: Partial<User> }>()
+export const updateUserProfileSuccess = createAction(
+  '[User] Update Profile Success',
+  props<{ user: User }>()
 );
-
-export const updateUserFailure = createAction(
-  '[User] Update User Failure',
+export const userProfileFailure = createAction(
+  '[User] Profile Failure',
   props<{ error: string }>()
 );

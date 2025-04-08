@@ -1,52 +1,24 @@
 import { createReducer, on } from '@ngrx/store';
-import * as UserActions from './user.actions';
+import { loadUserProfileSuccess, updateUserProfileSuccess, userProfileFailure } from './user.actions';
 import { User } from '../../models/user.model';
 
 export interface UserState {
-  user: User | null;
-  error: string | null;
-  loading: boolean;
+    user: User | null;
+    error: string | null;
 }
 
 export const initialState: UserState = {
-  user: null,
-  error: null,
-  loading: false,
+    user: null,
+    error: null,
 };
 
 export const userReducer = createReducer(
-  initialState,
-
-  on(UserActions.loadUser, (state) => ({
-    ...state,
-    loading: true,
-  })),
-
-  on(UserActions.loadUserSuccess, (state, { user }) => ({
-    ...state,
-    user,
-    loading: false,
-  })),
-
-  on(UserActions.loadUserFailure, (state, { error }) => ({
-    ...state,
-    error,
-    loading: false,
-  })),
-
-  on(UserActions.updateUser, (state) => ({
-    ...state,
-    loading: true,
-  })),
-
-  on(UserActions.updateUserSuccess, (state, { user }) => ({
-    ...state,
-    loading: false,
-  })),
-
-  on(UserActions.updateUserFailure, (state, { error }) => ({
-    ...state,
-    error,
-    loading: false,
-  }))
+    initialState,
+    on(loadUserProfileSuccess, (state, { user }) => ({ ...state, user, error: null })),
+    on(updateUserProfileSuccess, (state, { user }) => ({
+        ...state,
+        user: { ...state.user, ...user } as User, // Merge with existing user
+        error: null
+    })),
+    on(userProfileFailure, (state, { error }) => ({ ...state, user: null, error }))
 );
