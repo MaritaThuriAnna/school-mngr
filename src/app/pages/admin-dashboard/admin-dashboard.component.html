@@ -1,1 +1,163 @@
-<p>admin-dashboard works!</p>
+<!-- admin-dashboard.component.html -->
+<div class="admin-dashboard">
+  <h2>Admin Dashboard</h2>
+
+  <!-- Tab Navigation -->
+  <div class="tab-navigation">
+    <button [class.active]="currentTab === 'courses'" (click)="currentTab = 'courses'">Courses</button>
+    <button [class.active]="currentTab === 'conflicts'"
+      (click)="currentTab = 'conflicts'; loadConflicts()">Conflicts</button>
+  </div>
+
+  <!-- Courses Tab -->
+  <div *ngIf="currentTab === 'courses'">
+    <!-- Enrollment Form -->
+    <div class="enrollment-form">
+      <h3>Enroll a Student</h3>
+      <select [(ngModel)]="selectedCourseId" (ngModelChange)="selectedSessionIndex = null">
+        <option value="">Select a Course</option>
+        <option *ngFor="let course of courses" [value]="course.id">{{ course.name }}</option>
+      </select>
+      <select [(ngModel)]="selectedStudentId">
+        <option value="">Select a Student</option>
+        <option *ngFor="let student of students" [value]="student.id">{{ student.name }}</option>
+      </select>
+      <select [(ngModel)]="selectedSessionIndex" [disabled]="!selectedCourseId">
+        <option value="" disabled>Select a Session</option>
+        <option *ngFor="let session of getSelectedCourse()?.schedule; let i = index" [value]="i">
+          {{ session.day }}: {{ session.startTime }} - {{ session.endTime }} ({{ session.weeks }} weeks)
+        </option>
+      </select>
+      <button (click)="enrollStudent()">Enroll</button>
+    </div>
+
+    <div *ngIf="currentTab === 'courses'">
+      <h2>Courses</h2>
+      <input type="text" [(ngModel)]="filterText" (ngModelChange)="onFilterTextChange()"
+        placeholder="Filter courses..." />
+      <!-- Rest of the courses tab -->
+    </div>
+
+    <div *ngIf="loading" class="loading">Loading courses...</div>
+
+    <div *ngIf="conflict" class="conflict-message">
+      <p>{{ conflict }}</p>
+      <div *ngIf="conflictDetails">
+        <p>Conflict for {{ conflictDetails.studentName }} on {{ conflictDetails.conflictingSession1.day }}:</p>
+        <p>Course 1: {{ conflictDetails.course1.name }} ({{ conflictDetails.conflictingSession1.startTime }} - {{
+          conflictDetails.conflictingSession1.endTime }})</p>
+        <p>Course 2: {{ conflictDetails.course2.name }} ({{ conflictDetails.conflictingSession2.startTime }} - {{
+          conflictDetails.conflictingSession2.endTime }})</p>
+      </div>
+      <button (click)="clearConflict()">Clear Conflict</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Course Name</th>
+          <th>Professor</th>
+          <th>Schedule</th>
+          <th>Students</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let course of filteredCourses">
+          <td>{{ course.name }}</td>
+          <td>{{ course.professor }}</td>
+          <td>
+            <ul>
+              <li *ngFor="let session of course.schedule">
+                {{ session.day }}: {{ session.startTime }} - {{ session.endTime }} ({{ session.weeks }} weeks)
+              </li>
+              <li *ngIf="!course.schedule || course.schedule.length === 0">No schedule</li>
+            </ul>
+          </td>
+          <td>
+            <ul>
+              <li *ngFor="let student of course.students">{{ student }}</li>
+              <li *ngIf="!course.students.length">No students enrolled</li>
+            </ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Conflict Resolution Modal -->
+  <div *ngIf="conflictTabVisible" class="modal">
+    <div class="modal-content">
+      <h3>Resolve Conflict for {{ selectedConflict?.studentName }}</h3>
+      <p>Conflict between:</p>
+      <p>{{ selectedConflict?.course1?.name }} and {{ selectedConflict?.course2?.name }}</p>
+
+      <h4>Change Session for {{ selectedConflict?.course1?.name }}</h4>
+      <select [(ngModel)]="newSessionIndex1">
+        <option *ngFor="let session of selectedConflict?.course1?.schedule; let i = index" [ngValue]="i">
+          {{ session.day }}: {{ session.startTime }} - {{ session.endTime }} ({{ session.weeks }} weeks)
+        </option>
+      </select>
+      <button [disabled]="newSessionIndex1 === null" (click)="changeSessionInConflict(selectedConflict!, selectedConflict!.course1.id, newSessionIndex1!)">
+        Update Session
+      </button>
+
+      <h4>Change Session for {{ selectedConflict?.course2?.name }}</h4>
+      <select [(ngModel)]="newSessionIndex2">
+        <option *ngFor="let session of selectedConflict?.course2?.schedule; let i = index" [ngValue]="i">
+          {{ session.day }}: {{ session.startTime }} - {{ session.endTime }} ({{ session.weeks }} weeks)
+        </option>
+      </select>
+      <button [disabled]="newSessionIndex2 === null" (click)="changeSessionInConflict(selectedConflict!, selectedConflict!.course2.id, newSessionIndex2!)">
+        Update Session
+      </button>
+
+      <h4>Or Resolve by Keeping One Course:</h4>
+      <button (click)="resolveConflictInTab(selectedConflict!, selectedConflict!.course1.id)">
+        Keep {{ selectedConflict?.course1?.name }}
+      </button>
+      <button (click)="resolveConflictInTab(selectedConflict!, selectedConflict!.course2.id)">
+        Keep {{ selectedConflict?.course2?.name }}
+      </button>
+
+      <button (click)="closeConflictModal()">Close</button>
+    </div>
+  </div>
+
+  <div *ngIf="currentTab === 'conflicts'">
+    <h2>Conflicts</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Course 1</th>
+          <th>Session 1</th>
+          <th>Course 2</th>
+          <th>Session 2</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let conflict of conflicts">
+          <td>{{ conflict.studentName }}</td>
+          <td>{{ conflict.course1.name }}</td>
+          <td>
+            {{ conflict.course1.schedule[conflict.enrollment1.sessionIndex].day }}:
+            {{ conflict.course1.schedule[conflict.enrollment1.sessionIndex].startTime }} -
+            {{ conflict.course1.schedule[conflict.enrollment1.sessionIndex].endTime }}
+          </td>
+          <td>{{ conflict.course2.name }}</td>
+          <td>
+            {{ conflict.course2.schedule[conflict.enrollment2.sessionIndex].day }}:
+            {{ conflict.course2.schedule[conflict.enrollment2.sessionIndex].startTime }} -
+            {{ conflict.course2.schedule[conflict.enrollment2.sessionIndex].endTime }}
+          </td>
+          <td>
+            <button (click)="openConflictModal(conflict)">Resolve</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+
+</div>

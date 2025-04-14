@@ -57,7 +57,7 @@ export class AuthService {
     return null;
   }
 
-  signup(email: string, password: string, name: string, role: 'PROFESOR' | 'STUDENT') {
+  signup(email: string, password: string, name: string, role: 'ADMIN' | 'PROFESOR' | 'STUDENT') {
     return this.http
       .post<AuthResponseData>(
         `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${this.apiKey}`,
@@ -72,7 +72,7 @@ export class AuthService {
           this.sendVerificationEmail(response.idToken).subscribe(() =>
             console.log('Verification mail sent!')
           );
-  
+
           const userProfile = {
             id: response.localId,
             email,
@@ -80,7 +80,7 @@ export class AuthService {
             role,
             schoolId: 'HwIxpCjEXq9s6DlX2nJm'
           };
-  
+
           const userDocRef = doc(this.firestore, 'User', response.localId);
           await setDoc(userDocRef, userProfile);
         })
@@ -100,11 +100,11 @@ export class AuthService {
       .pipe(
         map(response => {
           const expirationDate = new Date(new Date().getTime() + +response.expiresIn * 1000);
-          
+
           // Safely cast the role to one of the expected types
-          const role: 'ADMIN' | 'PROFESOR' | 'STUDENT' = 
+          const role: 'ADMIN' | 'PROFESOR' | 'STUDENT' =
             ['ADMIN', 'PROFESOR', 'STUDENT'].includes(response.role) ? response.role as 'ADMIN' | 'PROFESOR' | 'STUDENT' : 'STUDENT';
-  
+
           const user = new User(
             response.email,
             response.localId,
@@ -116,7 +116,7 @@ export class AuthService {
             response.bio,
             response.officeHours
           );
-          
+
           this.user.next(user); // Update the BehaviorSubject
           return user; // Return the mapped user object
         }),
@@ -177,7 +177,7 @@ export class AuthService {
     const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
     const user = new User(email, userId, token, expirationDate, role, name, profilePicture, bio, officeHours);
     this.user.next(user);
-    localStorage.setItem('userData', JSON.stringify(user)); // Store user in local storage
+    localStorage.setItem('userData', JSON.stringify(user));
   }
 
   autoLogin() {

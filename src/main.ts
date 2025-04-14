@@ -21,7 +21,6 @@ import { AuthEffects } from './app/state/auth/auth.effects';
 import { authReducer } from './app/state/auth/auth.reducer';
 import { userReducer } from './app/state/user/user.reducer';
 import { UserEffects } from './app/state/user/user.effects';
-
 const routes: Routes = [
   { path: 'home', component: HomeComponent },
   { path: '', component: HomeComponent },
@@ -42,8 +41,8 @@ bootstrapApplication(AppComponent, {
     provideStorage(() => getStorage()),
 
     // NgRx Providers
-    provideStore({ auth: authReducer, user: userReducer }),
-    provideEffects([AuthEffects, UserEffects]), // Register both effects
+    provideStore({ auth: authReducer, user: userReducer}),
+    provideEffects([AuthEffects, UserEffects]),
     provideStoreDevtools()
   ],
 });

@@ -18,7 +18,7 @@ export class LoginComponent {
   email = '';
   password = '';
   name = '';
-  role: 'PROFESOR' | 'STUDENT' = 'STUDENT';
+  role: 'ADMIN' | 'PROFESOR' | 'STUDENT' = 'STUDENT';
   isRegistering = false;
   confirmPassword = '';
   isAuthenticated$!: Observable<boolean>;
@@ -84,11 +84,6 @@ export class LoginComponent {
         }
       });
     } else {
-      // this.authService.login(this.email, this.password).pipe().subscribe({
-      //   next: response => {
-      //     console.log('User logged in!', response);
-      //   }
-      // });
       this.store.dispatch(login({ email: this.email, password: this.password }));
     }
 
