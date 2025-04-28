@@ -1,59 +1,54 @@
 # SchoolMngr
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.0.0.
+SchoolMngr is a university course management web application built with **Angular**, **Firebase**, and **NgRx**. It supports distinct dashboards and permissions for **Admin**, **Professor**, and **Student** users. It also features automatic schedule conflict detection and resolution.
 
-## Development server
+---
 
-To start a local development server, run:
+Visit site: https://school-mngr-nine.vercel.app/
 
-```bash
-ng serve
-```
+## Technologies Used
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- **Frontend**: Angular 17
+- **State Management**: NgRx (Store, Effects, Selectors)
+- **Backend**: Firebase (Authentication, Firestore, Storage)
+- **Styling**: CSS/SCSS with custom components
 
-## Code scaffolding
+---
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Main Features
 
-```bash
-ng generate component component-name
-```
+### Admin
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- View all courses with associated professors and students
+- Dynamic filtering in the course table
+- Enroll students in specific course sessions
+- Automatic detection of **schedule conflicts**
+- Conflict resolution via:
+  - Keeping one course
+  - Changing session for the conflicting course
+- View all conflicts in a dedicated tab (modal popup)
+- Simulated email notification to student upon conflict
 
-```bash
-ng generate --help
-```
+### Professor
 
-## Building
+- Add / remove / update grades
+- Add course sessions with date and time
+- View attendance per student
+- Leave private notes for students
+- View class average and attendance rate
 
-To build the project run:
+### Student
 
-```bash
-ng build
-```
+- View enrolled courses and sessions
+- View grades and average per course
+- View attendance and absence history
+- Automatically calculated overall GPA
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+---
 
-## Running unit tests
+## Firebase Collections Structure
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- `User`: holds user data (role, name, contact, etc.)
+- `Course`: contains course metadata, sessions, professor
+- `Enrollments`: links student to course + session, grades, average
+- `Attendance`: logs attendance per student and session
