@@ -2,30 +2,36 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { User } from '../models/user.model';
-import { doc, Firestore, getDoc, setDoc } from '@angular/fire/firestore';
+import { doc, Firestore, getDoc, setDoc, updateDoc } from '@angular/fire/firestore';
+import { FirestoreService } from './firestore.service';
 
 
 interface AuthResponseData {
-    idToken: string;
-    email: string;
-    refreshToken: string;
-    expiresIn: string;
-    localId: string;
-    role: 'ADMIN' | 'PROFESOR' | 'STUDENT';
-    name: string;
+  idToken: string;
+  email: string;
+  refreshToken: string;
+  expiresIn: string;
+  localId: string;
+  role: 'ADMIN' | 'PROFESOR' | 'STUDENT';
+  name: string;
+  profilePicture: string,
+  bio: string;
+  officeHours: string
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private apiKey = 'AIzaSyDfv-YCtjXt68XnGul0LcK06eiSyMW6394';
   user = new BehaviorSubject<User | null>(null);
+  role$ = new BehaviorSubject<string | null>(null);
 
   constructor(
-    private http: HttpClient, 
+    private http: HttpClient,
     private router: Router,
-    private firestore: Firestore
+    private firestore: Firestore,
+    private firestoreService: FirestoreService
   ) {
     this.autoLogin();
   }
@@ -34,7 +40,24 @@ export class AuthService {
     return this.user.getValue()?.id;
   }
 
-  signup(email: string, password: string) {
+  async getRole(): Promise<string | null> {
+    if (this.role$.getValue()) {
+      return this.role$.getValue();
+    }
+
+    const currentUser = this.user.getValue();
+    if (currentUser) {
+      const userData = await this.firestoreService.getUserDataById(currentUser.id);
+      if (userData?.['role']) {
+        this.role$.next(userData['role']);
+        return userData['role'];
+      }
+    }
+
+    return null;
+  }
+
+  signup(email: string, password: string, name: string, role: 'ADMIN' | 'PROFESOR' | 'STUDENT') {
     return this.http
       .post<AuthResponseData>(
         `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${this.apiKey}`,
@@ -49,15 +72,15 @@ export class AuthService {
           this.sendVerificationEmail(response.idToken).subscribe(() =>
             console.log('Verification mail sent!')
           );
-  
+
           const userProfile = {
             id: response.localId,
             email,
-            name: email.split('@')[0],
-            role: 'STUDENT',
-            schoolId: 'schoolId1'
+            name,
+            role,
+            schoolId: 'HwIxpCjEXq9s6DlX2nJm'
           };
-  
+
           const userDocRef = doc(this.firestore, 'User', response.localId);
           await setDoc(userDocRef, userProfile);
         })
@@ -75,55 +98,44 @@ export class AuthService {
         }
       )
       .pipe(
-        tap(async (response) => {
-          this.handleAuthentication(
+        map(response => {
+          const expirationDate = new Date(new Date().getTime() + +response.expiresIn * 1000);
+
+          // Safely cast the role to one of the expected types
+          const role: 'ADMIN' | 'PROFESOR' | 'STUDENT' =
+            ['ADMIN', 'PROFESOR', 'STUDENT'].includes(response.role) ? response.role as 'ADMIN' | 'PROFESOR' | 'STUDENT' : 'STUDENT';
+
+          const user = new User(
             response.email,
             response.localId,
             response.idToken,
-            +response.expiresIn
+            expirationDate,
+            role,
+            response.name || response.email.split('@')[0],
+            response.profilePicture,
+            response.bio,
+            response.officeHours
           );
-  
-          // 🔍 Fetch role from Firestore
-          const userDocRef = doc(this.firestore, 'User', response.localId);
-          const userSnap = await getDoc(userDocRef);
-          const userData = userSnap.data() as { role: string };
-  
-          if (userData?.role === 'ADMIN') {
-            this.router.navigate(['admin-dashboard']);
-          } else if (userData?.role === 'PROFESOR') {
-            this.router.navigate(['profesor-dashboard']);
-          } else if (userData?.role === 'STUDENT') {
-            this.router.navigate(['student-dashboard']);
-          } else {
-            this.router.navigate(['/']);
-          }
+
+          this.user.next(user); // Update the BehaviorSubject
+          return user; // Return the mapped user object
+        }),
+        tap((user) => {
+          this.handleAuthentication(
+            user.email,
+            user.id,
+            user.token!,
+            (user.tokenExpirationDate.getTime() - new Date().getTime()) / 1000, // Corrected getter usage
+            user.role,
+            user.name,
+            user.profilePicture,
+            user.bio,
+            user.officeHours
+          );
+          localStorage.setItem('userData', JSON.stringify(user)); // Store user in local storage
         })
       );
   }
-
-//   login(email: string, password: string) {
-//     return this.http
-//       .post<AuthResponseData>(
-//         `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${this.apiKey}`,
-//         {
-//           email: email,
-//           password: password,
-//           returnSecureToken: true,
-//         }
-//       )
-//       .pipe(
-//         tap((response) => {
-//           this.handleAuthentication(
-//             response.email,
-//             response.localId,
-//             response.idToken,
-//             +response.expiresIn
-//           );
-//           // this.user.next(response);
-//           this.router.navigate(['track']);
-//         })
-//       );
-//   }
 
   resetPassword(email: string) {
     return this.http.post(
@@ -155,12 +167,17 @@ export class AuthService {
     email: string,
     userId: string,
     token: string,
-    expiresIn: number
+    expiresIn: number,
+    role: 'ADMIN' | 'PROFESOR' | 'STUDENT',
+    name: string,
+    profilePicture: string,
+    bio: string,
+    officeHours: string
   ) {
     const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
-    const user = new User(email, userId, token, expirationDate);
+    const user = new User(email, userId, token, expirationDate, role, name, profilePicture, bio, officeHours);
     this.user.next(user);
-    localStorage.setItem('userData', JSON.stringify(user)); // Store user in local storage
+    localStorage.setItem('userData', JSON.stringify(user));
   }
 
   autoLogin() {
@@ -169,6 +186,11 @@ export class AuthService {
       id: string;
       _token: string;
       _tokenExpirationDate: string;
+      role: 'ADMIN' | 'PROFESOR' | 'STUDENT';
+      name: string;
+      profilePicture: string,
+      bio: string,
+      officeHours: string
     } = JSON.parse(localStorage.getItem('userData')!);
     if (!userData) {
       return;
@@ -177,10 +199,54 @@ export class AuthService {
       userData.email,
       userData.id,
       userData._token,
-      new Date(userData._tokenExpirationDate)
+      new Date(userData._tokenExpirationDate),
+      userData.role,
+      userData.name,
+      userData.profilePicture,
+      userData.bio,
+      userData.officeHours
     );
     if (loadedUser.token) {
       this.user.next(loadedUser);
     }
+  }
+
+  async getCurrentUserData(): Promise<any> {
+    const currentUser = this.user.getValue();
+    if (!currentUser) {
+      console.warn('[AuthService] No user is currently logged in.');
+      return null;
+    }
+
+    console.log('[AuthService] Getting full data for user ID:', currentUser.id);
+    const userData = await this.firestoreService.getUserDataById(currentUser.id);
+
+    if (userData) {
+      console.log('[AuthService] Full user data retrieved:', userData);
+      return userData;
+    } else {
+      console.warn('[AuthService] User data not found in Firestore.');
+      return null;
+    }
+  }
+
+  updateUserProfile(user: any): Promise<void> {
+    console.log('[AuthService] Updating user profile:', user);
+
+    // Filter out undefined or empty fields
+    const filteredUser = Object.keys(user).reduce((acc, key) => {
+      if (user[key] !== undefined && user[key] !== '') {
+        acc[key] = user[key];
+      }
+      return acc;
+    }, {} as any);
+
+    const userDocRef = doc(this.firestore, 'User', user.id);
+    return updateDoc(userDocRef, filteredUser);
+  }
+
+  updatePassword(newPassword: string): Promise<void> {
+    console.log('[AuthService] Updating user password.');
+    return Promise.resolve();
   }
 }
